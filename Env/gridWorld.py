@@ -110,44 +110,20 @@ class GridWorld:
         print(grid_with_state)
 
     def calc_adjacency_matrix(self):
-        """
-        :return: An |S| x |S| matrix with entry 1 if the states are adjacent, 0 otherwise
-        """
         adjacency_matrix_long = np.zeros((self.num_rows, self.num_cols, self.num_rows, self.num_cols))
-
         for s0, s1 in np.ndindex(self.grid_shape):
-            if self.grid[s0, s1] == 1:  # if the state is a wall
+            if self.grid[s0, s1] == 1:
                 adjacency_matrix_long[s0, s1, :, :] = -1  # mark as negative so this state can be removed later
-                adjacency_matrix_long[:, :, s0, s1] = -1
                 continue
-
-            for i in [[0, 1], [1, 0], [0, -1], [-1, 0]]:  # all possible actions
-                # new state following the action
-                s_prime = [s0 + i[0], s1 + i[1]]
-                s0_prime, s1_prime = s_prime
-
-                # whether the action was horizontal or vertical
-                change_axis = np.argmax(np.abs(i))
-
-                # if the new state is out of bounds of the grid
-                if s_prime[change_axis] < 0 or s_prime[change_axis] > self.grid_shape[change_axis]:
-                    # add self loop and skip
-                    #adjacency_matrix_long[s0, s1, s0, s1] = 1
+            for r0, r1 in np.ndindex(self.grid_shape):
+                if self.grid[r0, r1] == 1:
+                    adjacency_matrix_long[:, :, r0, r1] = -1
                     continue
-
-                if self.grid[s0_prime, s1_prime] == 1:  # if the new state is a wall
-                    # add self loop and skip
-                    #adjacency_matrix_long[s0, s1, s0, s1] = 1
-                    adjacency_matrix_long[s0, s1, s0_prime, s1_prime] = -1
-                    continue
-
-                else:
-                    # states are adjacent! Fill in with a 1
-                    adjacency_matrix_long[s0, s1, s0_prime, s1_prime] = 1
-
+                if abs(s0 - r0) + abs(s1 - r1) == 1:
+                    adjacency_matrix_long[s0, s1, r0, r1] = 1
         # reshape into |S| x |S|
-        adjacency_matrix = adjacency_matrix_long.reshape((self.num_rows*self.num_cols,
-                                                          self.num_rows*self.num_cols))
+        adjacency_matrix = adjacency_matrix_long.reshape((self.num_rows * self.num_cols,
+                                                          self.num_rows * self.num_cols))
         adjacency_matrix_no_walls = self.remove_walls(adjacency_matrix)
         return adjacency_matrix_no_walls
 
